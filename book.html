@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Book a Service | ORVIX Faisalabad</title>
+<meta name="description" content="Choose your service and send your order to ORVIX on WhatsApp.">
+<meta name="robots" content="noindex, follow">
+<meta name="theme-color" content="#0B1F3A">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:Arial,Helvetica,sans-serif;background:#f4f6fa;color:#1a2433;line-height:1.5;padding-bottom:120px}
+a{text-decoration:none}
+.header{background:#0B1F3A;padding:14px 18px;display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;z-index:50}
+.logo{color:#F26B21;font-size:24px;font-weight:bold;letter-spacing:2px}
+.header a{color:#fff;font-size:14px;border:1px solid #ffffff55;padding:7px 14px;border-radius:20px}
+.wrap{max-width:700px;margin:0 auto;padding:20px 16px}
+h1{color:#0B1F3A;font-size:24px;text-align:center}
+.sub{text-align:center;color:#5b6778;font-size:14px;margin:6px 0 20px}
+h2{color:#0B1F3A;font-size:18px;margin:26px 0 10px}
+details.grp{background:#fff;border-radius:14px;margin-bottom:10px;box-shadow:0 2px 10px rgba(11,31,58,.08);border-left:4px solid #F26B21;overflow:hidden}
+details.grp summary{padding:14px 16px;font-weight:bold;color:#0B1F3A;font-size:16px;cursor:pointer}
+.item{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:12px 16px;border-top:1px solid #eef1f6}
+.item .nm{font-size:14px;font-weight:bold;color:#1a2433}
+.item .pr{font-size:12px;color:#5b6778}
+.qty{display:flex;align-items:center;gap:10px;flex-shrink:0}
+.qty button{width:34px;height:34px;border-radius:50%;border:none;background:#0B1F3A;color:#fff;font-size:20px;line-height:1}
+.qty button.plus{background:#F26B21}
+.qty span{min-width:18px;text-align:center;font-weight:bold}
+.form{background:#fff;border-radius:14px;padding:16px;box-shadow:0 2px 10px rgba(11,31,58,.08)}
+label{display:block;font-size:13px;font-weight:bold;color:#0B1F3A;margin:12px 0 5px}
+label:first-child{margin-top:0}
+input,textarea{width:100%;padding:12px;border:1px solid #cfd8e3;border-radius:10px;font-size:15px;font-family:inherit}
+textarea{min-height:80px;resize:vertical}
+.bar{position:fixed;left:0;right:0;bottom:0;background:#fff;box-shadow:0 -4px 16px rgba(0,0,0,.15);padding:12px 16px;z-index:60}
+.bar .in{max-width:700px;margin:0 auto}
+.sum{font-size:13px;color:#44505f;margin-bottom:8px;display:flex;justify-content:space-between;gap:8px}
+.sum b{color:#0B1F3A}
+.go{display:block;width:100%;background:#25D366;color:#fff;font-weight:bold;font-size:16px;padding:14px;border:none;border-radius:30px}
+.err{color:#c0392b;font-size:13px;margin-top:8px;text-align:center;min-height:18px}
+.note{font-size:12px;color:#5b6778;text-align:center;margin-top:14px}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="logo">ORVIX</div>
+  <a href="index.html">Home</a>
+</div>
+
+<div class="wrap">
+  <h1>Service Book Karein</h1>
+  <p class="sub">Services chunein, apni details likhein, aur order WhatsApp par bhej dein.</p>
+
+  <h2>1. Services chunein</h2>
+  <div id="list"></div>
+
+  <h2>2. Aapki details</h2>
+  <div class="form">
+    <label for="nm">Naam *</label>
+    <input id="nm" type="text" autocomplete="name" placeholder="Aapka naam">
+    <label for="ph">Phone number *</label>
+    <input id="ph" type="tel" autocomplete="tel" placeholder="03xx-xxxxxxx">
+    <label for="ad">Address / Area (Faisalabad) *</label>
+    <textarea id="ad" placeholder="Ghar ya dukaan ka address, mohalla ya area"></textarea>
+    <label for="tm">Kab chahiye? (din / waqt)</label>
+    <input id="tm" type="text" placeholder="Jaise: kal shaam ya aaj dopahar">
+    <label for="nt">Koi aur baat (optional)</label>
+    <textarea id="nt" placeholder="Masle ki detail ya koi khaas hidayat"></textarea>
+  </div>
+  <p class="note">Rate wali services ka final charge WhatsApp par confirm kiya jata hai.</p>
+</div>
+
+<div class="bar">
+  <div class="in">
+    <div class="sum"><span id="cnt">0 services chuni gayin</span><b id="tot"></b></div>
+    <button class="go" id="send" type="button">💬 WhatsApp par Order Confirm karein</button>
+    <div class="err" id="err"></div>
+  </div>
+</div>
+
+<script src="rates.js"></script>
+<script>
+(function(){
+  var qty = {};
+  var listEl = document.getElementById('list');
+  var params = new URLSearchParams(location.search);
+  var openId = params.get('service');
+
+  function money(n){ return 'Rs ' + Number(n).toLocaleString('en-PK'); }
+  function priceText(it){
+    return it.price > 0 ? money(it.price) + ' ' + it.unit : 'Rate WhatsApp par confirm hoga';
+  }
+
+  ORVIX_SERVICES.forEach(function(g){
+    var d = document.createElement('details');
+    d.className = 'grp';
+    d.id = g.id;
+    if (openId === g.id) d.open = true;
+    var s = document.createElement('summary');
+    s.textContent = g.emoji + ' ' + g.name;
+    d.appendChild(s);
+
+    g.items.forEach(function(it, i){
+      var key = g.id + '|' + i;
+      qty[key] = 0;
+      var row = document.createElement('div');
+      row.className = 'item';
+      var left = document.createElement('div');
+      var a = document.createElement('div'); a.className = 'nm'; a.textContent = it.name;
+      var b = document.createElement('div'); b.className = 'pr'; b.textContent = priceText(it);
+      left.appendChild(a); left.appendChild(b);
+
+      var q = document.createElement('div'); q.className = 'qty';
+      var minus = document.createElement('button'); minus.type = 'button'; minus.textContent = '−';
+      var num = document.createElement('span'); num.textContent = '0';
+      var plus = document.createElement('button'); plus.type = 'button'; plus.className = 'plus'; plus.textContent = '+';
+      minus.onclick = function(){ if(qty[key] > 0){ qty[key]--; num.textContent = qty[key]; update(); } };
+      plus.onclick = function(){ if(qty[key] < 20){ qty[key]++; num.textContent = qty[key]; update(); } };
+      q.appendChild(minus); q.appendChild(num); q.appendChild(plus);
+
+      row.appendChild(left); row.appendChild(q);
+      d.appendChild(row);
+    });
+    listEl.appendChild(d);
+  });
+
+  function chosen(){
+    var out = [];
+    ORVIX_SERVICES.forEach(function(g){
+      g.items.forEach(function(it, i){
+        var n = qty[g.id + '|' + i];
+        if (n > 0) out.push({group:g.name, item:it, n:n});
+      });
+    });
+    return out;
+  }
+
+  function update(){
+    var c = chosen(), total = 0, unpriced = false, count = 0;
+    c.forEach(function(x){
+      count += x.n;
+      if (x.item.price > 0) total += x.item.price * x.n; else unpriced = true;
+    });
+    document.getElementById('cnt').textContent = count + (count === 1 ? ' service chuni gayi' : ' services chuni gayin');
+    var t = '';
+    if (count > 0) {
+      if (total > 0) t = money(total) + (unpriced ? ' + baaqi confirm' : '');
+      else t = 'Rate confirm hoga';
+    }
+    document.getElementById('tot').textContent = t;
+  }
+
+  document.getElementById('send').onclick = function(){
+    var err = document.getElementById('err');
+    err.textContent = '';
+    var c = chosen();
+    var nm = document.getElementById('nm').value.trim();
+    var ph = document.getElementById('ph').value.trim();
+    var ad = document.getElementById('ad').value.trim();
+    var tm = document.getElementById('tm').value.trim();
+    var nt = document.getElementById('nt').value.trim();
+
+    if (c.length === 0) { err.textContent = 'Pehle kam az kam ek service chunein.'; return; }
+    if (!nm) { err.textContent = 'Apna naam likhein.'; return; }
+    if (ph.replace(/\D/g,'').length < 10) { err.textContent = 'Sahi phone number likhein.'; return; }
+    if (!ad) { err.textContent = 'Apna address ya area likhein.'; return; }
+
+    var total = 0, unpriced = false;
+    var lines = c.map(function(x, i){
+      var line = (i+1) + '. ' + x.item.name + ' x' + x.n;
+      if (x.item.price > 0) { var sub = x.item.price * x.n; total += sub; line += ' - ' + money(sub); }
+      else { unpriced = true; line += ' - rate confirm'; }
+      return line;
+    });
+
+    var msg = '*ORVIX - Naya Order*\n\n' +
+      'Naam: ' + nm + '\n' +
+      'Phone: ' + ph + '\n' +
+      'Address: ' + ad + '\n' +
+      (tm ? 'Waqt: ' + tm + '\n' : '') +
+      '\n*Services:*\n' + lines.join('\n') + '\n\n' +
+      (total > 0 ? 'Total (rate wali services): ' + money(total) + (unpriced ? ' + baaqi confirm\n' : '\n') : 'Rate: WhatsApp par confirm karein\n') +
+      (nt ? '\nNote: ' + nt : '');
+
+    location.href = 'https://wa.me/' + ORVIX_WHATSAPP + '?text=' + encodeURIComponent(msg);
+  };
+
+  update();
+  if (openId && document.getElementById(openId)) {
+    setTimeout(function(){ document.getElementById(openId).scrollIntoView(); }, 100);
+  }
+})();
+</script>
+</body>
+                                                                   </html>
